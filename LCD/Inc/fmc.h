@@ -48,8 +48,8 @@
 #include "main.h"
 
 /* USER CODE BEGIN Includes */
-#include "../is42s16400j/is42s16400j.h"
-#include "../Common/sdram.h"
+#include "../Drivers/BSP/Components/is42s16400j/is42s16400j.h"
+#include "../Drivers/BSP/Components/Common/sdram.h"
 
 /* USER CODE END Includes */
 

@@ -136,6 +136,7 @@ uint32_t LCD_GetXSize(void);
 uint32_t LCD_GetYSize(void);
 void     LCD_SetXSize(uint32_t imageWidthPixels);
 void     LCD_SetYSize(uint32_t imageHeightPixels);
+void LCD_LayerInit(uint16_t LayerIndex, uint32_t FB_Address,uint32_t PixelFormat);
 
 /* Functions using the LTDC controller */
 void     LCD_LayerDefaultInit(uint16_t LayerIndex, uint32_t FrameBuffer);

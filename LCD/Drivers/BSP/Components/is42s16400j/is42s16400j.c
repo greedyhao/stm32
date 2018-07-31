@@ -167,6 +167,7 @@ uint8_t IS42S16400J_Test(void)
   for(counter = 0; counter<IS42S16400J_SIZE;counter++ )
   {
     ubReaddata_8b = *(__IO uint8_t*)(SDRAM_BANK_ADDR + counter);  //从该地址读出数据
+//    printf("%c ",ubReaddata_8b);
     
     if(ubReaddata_8b != (uint8_t)(ubWritedata_8b + counter))      //检测数据，若不相等，跳出函数,返回检测失败结果。
     {

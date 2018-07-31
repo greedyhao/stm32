@@ -50,13 +50,15 @@
 #include "stdio.h"
 #include <string.h>
 #include "../Drivers/BSP/Components/std800480/std800480.h"
+//#include "image1.h"
+
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
-
+uint32_t read_buffer[200];
 
 /* USER CODE END PV */
 
@@ -124,15 +126,37 @@ int main(void)
   lcd_drv = &std800480_drv;
 //  lcd_init();
   lcd_drv->Init();
+  lcd_drv->LayerInit(0,(uint32_t)0xD0000000,ARGB8888);
+  lcd_drv->LayerInit(1,(uint32_t)0xD0200000,ARGB8888);
   lcd_drv->DisplayOn();
   lcd_drv->SelectLayer(0);
-  lcd_drv->Clear(LCD_COLOR_BLUE);
+  lcd_drv->Clear(LCD_COLOR_BLACK);
   lcd_drv->SelectLayer(1);
-  lcd_drv->Clear(LCD_COLOR_BLUE);
+  lcd_drv->Clear(LCD_COLOR_BLACK);
   
-//  lcd_drv->SetTransparency(0,255);
-//  lcd_drv->SetTransparency(1,0);
+  lcd_drv->SetTransparency(0,255);
+  lcd_drv->SetTransparency(1,0);
+
   LED_GREEN;
+  
+  printf("%s\n","-----D000 after clear-----");
+  uint32_t i;
+  uint8_t ubReaddata_8b=0;
+  for (i=0; i<200; i++) {
+    ubReaddata_8b = *(__IO uint8_t*)(0xD0000000 + i);
+    printf("%x ",ubReaddata_8b);
+  }
+  
+  printf("\n%s\n","-----D000 after clear-----");
+  
+  printf("%s\n","-----D020 after clear-----");
+  
+  for (i=0; i<200; i++) {
+    ubReaddata_8b = *(__IO uint8_t*)(0xD0200000 + i);
+    printf("%x ",ubReaddata_8b);
+  }
+  
+  printf("\n%s\n","-----D020 after clear-----");
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -142,10 +166,9 @@ int main(void)
   {
 		
   /* USER CODE END WHILE */
-//    lcd_drv->Test();
 
   /* USER CODE BEGIN 3 */
-    
+    lcd_drv->Test();
   }
   /* USER CODE END 3 */
 
@@ -206,11 +229,11 @@ void SystemClock_Config(void)
 
   PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_LTDC|RCC_PERIPHCLK_USART1;
   PeriphClkInitStruct.PLLSAI.PLLSAIN = 192;
-  PeriphClkInitStruct.PLLSAI.PLLSAIR = 3;
+  PeriphClkInitStruct.PLLSAI.PLLSAIR = 5;
   PeriphClkInitStruct.PLLSAI.PLLSAIQ = 2;
   PeriphClkInitStruct.PLLSAI.PLLSAIP = RCC_PLLSAIP_DIV2;
   PeriphClkInitStruct.PLLSAIDivQ = 1;
-  PeriphClkInitStruct.PLLSAIDivR = RCC_PLLSAIDIVR_2;
+  PeriphClkInitStruct.PLLSAIDivR = RCC_PLLSAIDIVR_4;
   PeriphClkInitStruct.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK2;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
   {
@@ -260,6 +283,30 @@ void sdram_init(void)
   sdram_drv->Init(&hsdram1);
   printf("SDRAM Sequence init OK\n");
 //  sdram_drv->Test();
+//  sdram_drv->ReadBuffer(read_buffer,LCD_FB_START_ADDRESS,200);
+//  int i;
+//  for (i=0; i<200; i++) printf("%c ",read_buffer[i]);
+//  printf("\n");
+//  sdram_drv->ReadBuffer(read_buffer,0xD0200000,200);
+//  for (i=0; i<200; i++) printf("%c ",read_buffer[i]);
+
+  printf("%s\n","-----D000 before clear-----");
+  uint32_t i;
+  uint8_t ubReaddata_8b=0;
+  for (i=0; i<200; i++) {
+    ubReaddata_8b = *(__IO uint8_t*)(0xD0000000 + i);
+    printf("%x ",ubReaddata_8b);
+  }
+  
+  printf("\n%s\n","-----D000 before clear-----");
+  
+    printf("%s\n","-----D020 before clear-----");
+  for (i=0; i<200; i++) {
+    ubReaddata_8b = *(__IO uint8_t*)(0xD0000000 + i);
+    printf("%x ",ubReaddata_8b);
+  }
+  
+  printf("\n%s\n","-----D020 before clear-----");
 }
 
 void lcd_init(void)

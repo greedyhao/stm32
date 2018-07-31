@@ -1,6 +1,8 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f7xx_hal.h"
+#include "dma2d.h"
+#include "ltdc.h"
 #include "../std800480/std800480.h"
 #include "../../../../Utilities/fonts/font24.c"
 #include "../../../../Utilities/fonts/font20.c"
@@ -82,6 +84,7 @@ LCD_DrvTypeDef std800480_drv =
   LCD_Clear,
   LCD_SelectLayer,
   LCD_SetTransparency,
+  LCD_LayerInit,
 };
 
 
@@ -93,8 +96,8 @@ LCD_DrvTypeDef std800480_drv =
 /** @defgroup STD800480_Private_FunctionPrototypes
   * @{
   */
-static LTDC_HandleTypeDef  Ltdc_Handler;
-static DMA2D_HandleTypeDef Dma2d_Handler;
+//static LTDC_HandleTypeDef  hltdc;
+static DMA2D_HandleTypeDef hdma2d;
 
 
 static void DrawChar(uint16_t Xpos, uint16_t Ypos, const uint8_t *c);
@@ -159,7 +162,7 @@ void LCD_Test(void)
 	LCD_DrawLine(600,250,600,400);
 
 //	Delay(0xFFFFFF);
-  HAL_Delay(0xFFFFFF);
+  HAL_Delay(3000);
 
 	LCD_SetColors(LCD_COLOR_BLACK,LCD_COLOR_BLACK);
 	LCD_FillRect(0,200,LCD_PIXEL_WIDTH,LCD_PIXEL_HEIGHT-200);
@@ -180,7 +183,7 @@ void LCD_Test(void)
 	LCD_DrawRect(200,350,50,200);
 
 //	Delay(0xFFFFFF);
-  HAL_Delay(0xFFFFFF);
+  HAL_Delay(3000);
 
 
 	LCD_SetColors(LCD_COLOR_BLACK,LCD_COLOR_BLACK);
@@ -202,7 +205,7 @@ void LCD_Test(void)
 	LCD_FillRect(200,350,50,200);
 
 //	Delay(0xFFFFFF);
-  HAL_Delay(0xFFFFFF);
+  HAL_Delay(3000);
 
 	LCD_SetColors(LCD_COLOR_BLACK,LCD_COLOR_BLACK);
 	LCD_FillRect(0,200,LCD_PIXEL_WIDTH,LCD_PIXEL_HEIGHT-200);
@@ -219,7 +222,7 @@ void LCD_Test(void)
 	LCD_DrawCircle(350,350,75);
 
 //	Delay(0xFFFFFF);
-  HAL_Delay(0xFFFFFF);
+  HAL_Delay(3000);
 
 	LCD_SetColors(LCD_COLOR_BLACK,LCD_COLOR_BLACK);
 	LCD_FillRect(0,200,LCD_PIXEL_WIDTH,LCD_PIXEL_HEIGHT-200);
@@ -237,7 +240,7 @@ void LCD_Test(void)
 	LCD_FillCircle(450,350,75);
 
 //	Delay(0xFFFFFF);
-  HAL_Delay(0xFFFFFF);
+  HAL_Delay(3000);
 
 	LCD_SetColors(LCD_COLOR_BLACK,LCD_COLOR_BLACK);
 	LCD_FillRect(0,200,LCD_PIXEL_WIDTH,LCD_PIXEL_HEIGHT-200);
@@ -262,7 +265,7 @@ void LCD_Test(void)
 	LCD_FillCircle(400,350,75);
 	
 //	Delay(0xFFFFFF);
-  HAL_Delay(0xFFFFFF);
+  HAL_Delay(3000);
 	
 	/*透明效果 背景层操作*/
 
@@ -282,7 +285,7 @@ void LCD_Test(void)
 	LCD_FillCircle(350,350,75);
 	
 //	Delay(0xFFFFFF);
-  HAL_Delay(0xFFFFFF);
+  HAL_Delay(3000);
 	LCD_SetColors(LCD_COLOR_BLACK,LCD_COLOR_BLACK);
 	LCD_FillRect(0,200,LCD_PIXEL_WIDTH,LCD_PIXEL_HEIGHT-200);
 	}
@@ -291,67 +294,9 @@ void LCD_Test(void)
 
 void LCD_Init(void)
 {
-//    RCC_PeriphCLKInitTypeDef  periph_clk_init_struct;  
-//    /* 使能LTDC时钟 */
-//    __HAL_RCC_LTDC_CLK_ENABLE();
-//    /* 使能DMA2D时钟 */
-//    __HAL_RCC_DMA2D_CLK_ENABLE();
-////    /* 初始化LCD引脚 */
-////    LCD_GPIO_Config();
-////    /* 初始化SDRAM 用作LCD 显存*/
-////    SDRAM_Init();
-//    /* 配置LTDC参数 */
-//    Ltdc_Handler.Instance = LTDC;  
-//    /* 配置行同步信号宽度(HSW-1) */
-//    Ltdc_Handler.Init.HorizontalSync =HSW-1;
-//    /* 配置垂直同步信号宽度(VSW-1) */
-//    Ltdc_Handler.Init.VerticalSync = VSW-1;
-//    /* 配置(HSW+HBP-1) */
-//    Ltdc_Handler.Init.AccumulatedHBP = HSW+HBP-1;
-//    /* 配置(VSW+VBP-1) */
-//    Ltdc_Handler.Init.AccumulatedVBP = VSW+VBP-1;
-//    /* 配置(HSW+HBP+有效像素宽度-1) */
-//    Ltdc_Handler.Init.AccumulatedActiveW = HSW+HBP+LCD_PIXEL_WIDTH-1;
-//    /* 配置(VSW+VBP+有效像素高度-1) */
-//    Ltdc_Handler.Init.AccumulatedActiveH = VSW+VBP+LCD_PIXEL_HEIGHT-1;
-//    /* 配置总宽度(HSW+HBP+有效像素宽度+HFP-1) */
-//    Ltdc_Handler.Init.TotalWidth =HSW+ HBP+LCD_PIXEL_WIDTH + HFP-1; 
-//    /* 配置总高度(VSW+VBP+有效像素高度+VFP-1) */
-//    Ltdc_Handler.Init.TotalHeigh =VSW+ VBP+LCD_PIXEL_HEIGHT + VFP-1;
-//    /* 液晶屏时钟配置 */
-//    /* PLLSAI_VCO Input = HSE_VALUE/PLL_M = 1 Mhz */
-//    /* PLLSAI_VCO Output = PLLSAI_VCO Input * PLLSAIN = 192 Mhz */
-//    /* PLLLCDCLK = PLLSAI_VCO Output/PLLSAIR = 192/5 = 38.4 Mhz */
-//    /* LTDC clock frequency = PLLLCDCLK / LTDC_PLLSAI_DIVR_4 = 38.4/4 = 9.6Mhz */
-//    periph_clk_init_struct.PeriphClockSelection = RCC_PERIPHCLK_LTDC;
-//    periph_clk_init_struct.PLLSAI.PLLSAIN = 192;
-//    periph_clk_init_struct.PLLSAI.PLLSAIR = 5;
-//    periph_clk_init_struct.PLLSAIDivR = RCC_PLLSAIDIVR_4;
-//    HAL_RCCEx_PeriphCLKConfig(&periph_clk_init_struct);
-//    /* 初始化LCD的像素宽度和高度 */
-//    Ltdc_Handler.LayerCfg->ImageWidth  = LCD_PIXEL_WIDTH;
-//    Ltdc_Handler.LayerCfg->ImageHeight = LCD_PIXEL_HEIGHT;
-//    /* 设置LCD背景层的颜色，默认黑色 */
-//    Ltdc_Handler.Init.Backcolor.Red = 0;
-//    Ltdc_Handler.Init.Backcolor.Green = 0;
-//    Ltdc_Handler.Init.Backcolor.Blue = 0;
-//    /* 极性配置 */
-//    /* 初始化行同步极性，低电平有效 */
-//    Ltdc_Handler.Init.HSPolarity = LTDC_HSPOLARITY_AL;
-//    /* 初始化场同步极性，低电平有效 */
-//    Ltdc_Handler.Init.VSPolarity = LTDC_VSPOLARITY_AL;
-//    /* 初始化数据有效极性，低电平有效 */
-//    Ltdc_Handler.Init.DEPolarity = LTDC_DEPOLARITY_AL;
-//    /* 初始化行像素时钟极性，同输入时钟 */
-//    Ltdc_Handler.Init.PCPolarity = LTDC_PCPOLARITY_IPC;
-//    HAL_LTDC_Init(&Ltdc_Handler);
+
     /* 初始化字体 */
     LCD_SetFont(&LCD_DEFAULT_FONT);
-    
-    LCD_SetTransparency(0, 255);
-    LCD_SetTransparency(1, 0);
-    
-//    LCD_DisplayOn();
 }
 
 /**
@@ -360,7 +305,7 @@ void LCD_Init(void)
   */
 uint32_t LCD_GetXSize(void)
 {
-  return Ltdc_Handler.LayerCfg[ActiveLayer].ImageWidth;
+  return hltdc.LayerCfg[ActiveLayer].ImageWidth;
 }
 
 /**
@@ -369,7 +314,7 @@ uint32_t LCD_GetXSize(void)
   */
 uint32_t LCD_GetYSize(void)
 {
-  return Ltdc_Handler.LayerCfg[ActiveLayer].ImageHeight;
+  return hltdc.LayerCfg[ActiveLayer].ImageHeight;
 }
 
 /**
@@ -379,7 +324,7 @@ uint32_t LCD_GetYSize(void)
   */
 void LCD_SetXSize(uint32_t imageWidthPixels)
 {
-  Ltdc_Handler.LayerCfg[ActiveLayer].ImageWidth = imageWidthPixels;
+  hltdc.LayerCfg[ActiveLayer].ImageWidth = imageWidthPixels;
 }
 
 /**
@@ -389,7 +334,7 @@ void LCD_SetXSize(uint32_t imageWidthPixels)
   */
 void LCD_SetYSize(uint32_t imageHeightPixels)
 {
-  Ltdc_Handler.LayerCfg[ActiveLayer].ImageHeight = imageHeightPixels;
+  hltdc.LayerCfg[ActiveLayer].ImageHeight = imageHeightPixels;
 }
 
 /**
@@ -420,13 +365,13 @@ void LCD_LayerInit(uint16_t LayerIndex, uint32_t FB_Address,uint32_t PixelFormat
   layer_cfg.ImageWidth = LCD_GetXSize();//设置图像宽度
   layer_cfg.ImageHeight = LCD_GetYSize();//设置图像高度
   
-  HAL_LTDC_ConfigLayer(&Ltdc_Handler, &layer_cfg, LayerIndex); //设置选中的层参数
+  HAL_LTDC_ConfigLayer(&hltdc, &layer_cfg, LayerIndex); //设置选中的层参数
 
   DrawProp[LayerIndex].BackColor = LCD_COLOR_WHITE;//设置层的字体颜色
   DrawProp[LayerIndex].pFont     = &LCD_DEFAULT_FONT;//设置层的字体类型
   DrawProp[LayerIndex].TextColor = LCD_COLOR_BLACK; //设置层的字体背景颜色
   
-  __HAL_LTDC_RELOAD_CONFIG(&Ltdc_Handler);//重载层的配置参数
+  __HAL_LTDC_RELOAD_CONFIG(&hltdc);//重载层的配置参数
 }
 /**
   * @brief  选择LCD层
@@ -448,13 +393,13 @@ void LCD_SetLayerVisible(uint32_t LayerIndex, FunctionalState State)
 {
   if(State == ENABLE)
   {
-    __HAL_LTDC_LAYER_ENABLE(&Ltdc_Handler, LayerIndex);
+    __HAL_LTDC_LAYER_ENABLE(&hltdc, LayerIndex);
   }
   else
   {
-    __HAL_LTDC_LAYER_DISABLE(&Ltdc_Handler, LayerIndex);
+    __HAL_LTDC_LAYER_DISABLE(&hltdc, LayerIndex);
   }
-  __HAL_LTDC_RELOAD_CONFIG(&Ltdc_Handler);
+  __HAL_LTDC_RELOAD_CONFIG(&hltdc);
 } 
 
 /**
@@ -465,7 +410,7 @@ void LCD_SetLayerVisible(uint32_t LayerIndex, FunctionalState State)
   */
 void LCD_SetTransparency(uint32_t LayerIndex, uint8_t Transparency)
 {    
-  HAL_LTDC_SetAlpha(&Ltdc_Handler, Transparency, LayerIndex);
+  HAL_LTDC_SetAlpha(&hltdc, Transparency, LayerIndex);
 }
 
 /**
@@ -476,7 +421,7 @@ void LCD_SetTransparency(uint32_t LayerIndex, uint8_t Transparency)
   */
 void LCD_SetLayerAddress(uint32_t LayerIndex, uint32_t Address)
 {
-  HAL_LTDC_SetAddress(&Ltdc_Handler, Address, LayerIndex);
+  HAL_LTDC_SetAddress(&hltdc, Address, LayerIndex);
 }
 
 /**
@@ -491,10 +436,10 @@ void LCD_SetLayerAddress(uint32_t LayerIndex, uint32_t Address)
 void LCD_SetLayerWindow(uint16_t LayerIndex, uint16_t Xpos, uint16_t Ypos, uint16_t Width, uint16_t Height)
 {
   /* 重新设置窗口大小 */
-  HAL_LTDC_SetWindowSize(&Ltdc_Handler, Width, Height, LayerIndex);
+  HAL_LTDC_SetWindowSize(&hltdc, Width, Height, LayerIndex);
   
   /* 重新设置窗口的起始位置 */
-  HAL_LTDC_SetWindowPosition(&Ltdc_Handler, Xpos, Ypos, LayerIndex); 
+  HAL_LTDC_SetWindowPosition(&hltdc, Xpos, Ypos, LayerIndex); 
 }
 
 
@@ -576,29 +521,29 @@ uint32_t LCD_ReadPixel(uint16_t Xpos, uint16_t Ypos)
 {
   uint32_t ret = 0;
   
-  if(Ltdc_Handler.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_ARGB8888)
+  if(hltdc.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_ARGB8888)
   {
     /* 从SDRAM显存中读取颜色数据 */
-    ret = *(__IO uint32_t*) (Ltdc_Handler.LayerCfg[ActiveLayer].FBStartAdress + (2*(Ypos*LCD_GetXSize() + Xpos)));
+    ret = *(__IO uint32_t*) (hltdc.LayerCfg[ActiveLayer].FBStartAdress + (2*(Ypos*LCD_GetXSize() + Xpos)));
   }
-  else if(Ltdc_Handler.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_RGB888)
+  else if(hltdc.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_RGB888)
   {
     /* 从SDRAM显存中读取颜色数据 */
-    ret  = (*(__IO uint8_t*) (Ltdc_Handler.LayerCfg[ActiveLayer].FBStartAdress + (3*(Ypos*LCD_GetXSize() + Xpos))+2) & 0x00FFFFFF);
-	ret |= (*(__IO uint8_t*) (Ltdc_Handler.LayerCfg[ActiveLayer].FBStartAdress + (3*(Ypos*LCD_GetXSize() + Xpos))+1) & 0x00FFFFFF);
-	ret |= (*(__IO uint8_t*) (Ltdc_Handler.LayerCfg[ActiveLayer].FBStartAdress + (3*(Ypos*LCD_GetXSize() + Xpos))) & 0x00FFFFFF);
+    ret  = (*(__IO uint8_t*) (hltdc.LayerCfg[ActiveLayer].FBStartAdress + (3*(Ypos*LCD_GetXSize() + Xpos))+2) & 0x00FFFFFF);
+	ret |= (*(__IO uint8_t*) (hltdc.LayerCfg[ActiveLayer].FBStartAdress + (3*(Ypos*LCD_GetXSize() + Xpos))+1) & 0x00FFFFFF);
+	ret |= (*(__IO uint8_t*) (hltdc.LayerCfg[ActiveLayer].FBStartAdress + (3*(Ypos*LCD_GetXSize() + Xpos))) & 0x00FFFFFF);
   }
-  else if((Ltdc_Handler.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_RGB565) || \
-          (Ltdc_Handler.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_ARGB4444) || \
-          (Ltdc_Handler.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_AL88))  
+  else if((hltdc.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_RGB565) || \
+          (hltdc.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_ARGB4444) || \
+          (hltdc.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_AL88))  
   {
     /* 从SDRAM显存中读取颜色数据 */
-    ret = *(__IO uint16_t*) (Ltdc_Handler.LayerCfg[ActiveLayer].FBStartAdress + (2*(Ypos*LCD_GetXSize() + Xpos)));    
+    ret = *(__IO uint16_t*) (hltdc.LayerCfg[ActiveLayer].FBStartAdress + (2*(Ypos*LCD_GetXSize() + Xpos)));    
   }
   else
   {
     /* 从SDRAM显存中读取颜色数据 */
-    ret = *(__IO uint8_t*) (Ltdc_Handler.LayerCfg[ActiveLayer].FBStartAdress + (2*(Ypos*LCD_GetXSize() + Xpos)));    
+    ret = *(__IO uint8_t*) (hltdc.LayerCfg[ActiveLayer].FBStartAdress + (2*(Ypos*LCD_GetXSize() + Xpos)));    
   }
   
   return ret;
@@ -612,7 +557,7 @@ uint32_t LCD_ReadPixel(uint16_t Xpos, uint16_t Ypos)
 void LCD_Clear(uint32_t Color)
 { 
   /* 清屏 */ 
-  LL_FillBuffer(ActiveLayer, (uint32_t *)(Ltdc_Handler.LayerCfg[ActiveLayer].FBStartAdress), LCD_GetXSize(), LCD_GetYSize(), 0, Color);
+  LL_FillBuffer(ActiveLayer, (uint32_t *)(hltdc.LayerCfg[ActiveLayer].FBStartAdress), LCD_GetXSize(), LCD_GetYSize(), 0, Color);
 }
 
 /**
@@ -731,23 +676,23 @@ void LCD_DrawHLine(uint16_t Xpos, uint16_t Ypos, uint16_t Length)
 {
   uint32_t  Xaddress = 0;
 
-  if(Ltdc_Handler.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_ARGB8888)
+  if(hltdc.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_ARGB8888)
   {
-    Xaddress = (Ltdc_Handler.LayerCfg[ActiveLayer].FBStartAdress) + 4*(LCD_GetXSize()*Ypos + Xpos);
+    Xaddress = (hltdc.LayerCfg[ActiveLayer].FBStartAdress) + 4*(LCD_GetXSize()*Ypos + Xpos);
   }
-  else if(Ltdc_Handler.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_RGB888)
+  else if(hltdc.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_RGB888)
   {
-    Xaddress = (Ltdc_Handler.LayerCfg[ActiveLayer].FBStartAdress) + 3*(LCD_GetXSize()*Ypos + Xpos);
+    Xaddress = (hltdc.LayerCfg[ActiveLayer].FBStartAdress) + 3*(LCD_GetXSize()*Ypos + Xpos);
   }
-  else if((Ltdc_Handler.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_RGB565) || \
-          (Ltdc_Handler.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_ARGB4444) || \
-          (Ltdc_Handler.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_AL88))  
+  else if((hltdc.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_RGB565) || \
+          (hltdc.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_ARGB4444) || \
+          (hltdc.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_AL88))  
   {
-    Xaddress = (Ltdc_Handler.LayerCfg[ActiveLayer].FBStartAdress) + 2*(LCD_GetXSize()*Ypos + Xpos);   
+    Xaddress = (hltdc.LayerCfg[ActiveLayer].FBStartAdress) + 2*(LCD_GetXSize()*Ypos + Xpos);   
   }
   else
   {
-    Xaddress = (Ltdc_Handler.LayerCfg[ActiveLayer].FBStartAdress) + 2*(LCD_GetXSize()*Ypos + Xpos);   
+    Xaddress = (hltdc.LayerCfg[ActiveLayer].FBStartAdress) + 2*(LCD_GetXSize()*Ypos + Xpos);   
   }	
   /* 填充数据 */
   LL_FillBuffer(ActiveLayer, (uint32_t *)Xaddress, Length, 1, 0, DrawProp[ActiveLayer].TextColor);
@@ -764,23 +709,23 @@ void LCD_DrawVLine(uint16_t Xpos, uint16_t Ypos, uint16_t Length)
 {
   uint32_t  Xaddress = 0;
   
-  if(Ltdc_Handler.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_ARGB8888)
+  if(hltdc.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_ARGB8888)
   {
-    Xaddress = (Ltdc_Handler.LayerCfg[ActiveLayer].FBStartAdress) + 4*(LCD_GetXSize()*Ypos + Xpos);
+    Xaddress = (hltdc.LayerCfg[ActiveLayer].FBStartAdress) + 4*(LCD_GetXSize()*Ypos + Xpos);
   }
-  else if(Ltdc_Handler.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_RGB888)
+  else if(hltdc.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_RGB888)
   {
-    Xaddress = (Ltdc_Handler.LayerCfg[ActiveLayer].FBStartAdress) + 3*(LCD_GetXSize()*Ypos + Xpos);
+    Xaddress = (hltdc.LayerCfg[ActiveLayer].FBStartAdress) + 3*(LCD_GetXSize()*Ypos + Xpos);
   }
-  else if((Ltdc_Handler.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_RGB565) || \
-          (Ltdc_Handler.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_ARGB4444) || \
-          (Ltdc_Handler.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_AL88))  
+  else if((hltdc.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_RGB565) || \
+          (hltdc.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_ARGB4444) || \
+          (hltdc.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_AL88))  
   {
-    Xaddress = (Ltdc_Handler.LayerCfg[ActiveLayer].FBStartAdress) + 2*(LCD_GetXSize()*Ypos + Xpos);   
+    Xaddress = (hltdc.LayerCfg[ActiveLayer].FBStartAdress) + 2*(LCD_GetXSize()*Ypos + Xpos);   
   }
   else
   {
-    Xaddress = (Ltdc_Handler.LayerCfg[ActiveLayer].FBStartAdress) + 2*(LCD_GetXSize()*Ypos + Xpos);   
+    Xaddress = (hltdc.LayerCfg[ActiveLayer].FBStartAdress) + 2*(LCD_GetXSize()*Ypos + Xpos);   
   }	
   
   /* 填充数据 */
@@ -999,25 +944,25 @@ void LCD_DrawEllipse(int Xpos, int Ypos, int XRadius, int YRadius)
 void LCD_DrawPixel(uint16_t Xpos, uint16_t Ypos, uint32_t RGB_Code)
 {
 
-  if(Ltdc_Handler.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_ARGB8888)
+  if(hltdc.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_ARGB8888)
   {
-    *(__IO uint32_t*) (Ltdc_Handler.LayerCfg[ActiveLayer].FBStartAdress + (4*(Ypos*LCD_GetXSize() + Xpos))) = RGB_Code;
+    *(__IO uint32_t*) (hltdc.LayerCfg[ActiveLayer].FBStartAdress + (4*(Ypos*LCD_GetXSize() + Xpos))) = RGB_Code;
   }
-  else if(Ltdc_Handler.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_RGB888)
+  else if(hltdc.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_RGB888)
   {
-    *(__IO uint8_t*) (Ltdc_Handler.LayerCfg[ActiveLayer].FBStartAdress + (3*(Ypos*LCD_GetXSize() + Xpos))+2) = 0xFF&(RGB_Code>>16);
-	*(__IO uint8_t*) (Ltdc_Handler.LayerCfg[ActiveLayer].FBStartAdress + (3*(Ypos*LCD_GetXSize() + Xpos))+1) = 0xFF&(RGB_Code>>8);
-	*(__IO uint8_t*) (Ltdc_Handler.LayerCfg[ActiveLayer].FBStartAdress + (3*(Ypos*LCD_GetXSize() + Xpos))) = 0xFF&RGB_Code;
+    *(__IO uint8_t*) (hltdc.LayerCfg[ActiveLayer].FBStartAdress + (3*(Ypos*LCD_GetXSize() + Xpos))+2) = 0xFF&(RGB_Code>>16);
+	*(__IO uint8_t*) (hltdc.LayerCfg[ActiveLayer].FBStartAdress + (3*(Ypos*LCD_GetXSize() + Xpos))+1) = 0xFF&(RGB_Code>>8);
+	*(__IO uint8_t*) (hltdc.LayerCfg[ActiveLayer].FBStartAdress + (3*(Ypos*LCD_GetXSize() + Xpos))) = 0xFF&RGB_Code;
   }
-  else if((Ltdc_Handler.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_RGB565) || \
-          (Ltdc_Handler.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_ARGB4444) || \
-          (Ltdc_Handler.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_AL88))  
+  else if((hltdc.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_RGB565) || \
+          (hltdc.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_ARGB4444) || \
+          (hltdc.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_AL88))  
   {
-    *(__IO uint16_t*) (Ltdc_Handler.LayerCfg[ActiveLayer].FBStartAdress + (2*(Ypos*LCD_GetXSize() + Xpos))) = (uint16_t)RGB_Code;   
+    *(__IO uint16_t*) (hltdc.LayerCfg[ActiveLayer].FBStartAdress + (2*(Ypos*LCD_GetXSize() + Xpos))) = (uint16_t)RGB_Code;   
   }
   else
   {
-    *(__IO uint16_t*) (Ltdc_Handler.LayerCfg[ActiveLayer].FBStartAdress + (2*(Ypos*LCD_GetXSize() + Xpos))) = (uint16_t)RGB_Code;   
+    *(__IO uint16_t*) (hltdc.LayerCfg[ActiveLayer].FBStartAdress + (2*(Ypos*LCD_GetXSize() + Xpos))) = (uint16_t)RGB_Code;   
   }
 
 }
@@ -1051,7 +996,7 @@ void LCD_DrawBitmap(uint32_t Xpos, uint32_t Ypos, uint8_t *pbmp)
   bit_pixel = *(uint16_t *) (pbmp + 28);   
   
   /* 设定地址 */
-  address = Ltdc_Handler.LayerCfg[ActiveLayer].FBStartAdress + (((LCD_GetXSize()*Ypos) + Xpos)*(4));
+  address = hltdc.LayerCfg[ActiveLayer].FBStartAdress + (((LCD_GetXSize()*Ypos) + Xpos)*(4));
   
   /*判断层输入像素格式 */    
   if ((bit_pixel/8) == 4)
@@ -1098,23 +1043,23 @@ void LCD_FillRect(uint16_t Xpos, uint16_t Ypos, uint16_t Width, uint16_t Height)
   LCD_SetTextColor(DrawProp[ActiveLayer].TextColor);
   
   /* 设置矩形开始地址 */
-    if(Ltdc_Handler.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_ARGB8888)
+    if(hltdc.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_ARGB8888)
   {
-    x_address = (Ltdc_Handler.LayerCfg[ActiveLayer].FBStartAdress) + 4*(LCD_GetXSize()*Ypos + Xpos);
+    x_address = (hltdc.LayerCfg[ActiveLayer].FBStartAdress) + 4*(LCD_GetXSize()*Ypos + Xpos);
   }
-  else if(Ltdc_Handler.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_RGB888)
+  else if(hltdc.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_RGB888)
   {
-    x_address = (Ltdc_Handler.LayerCfg[ActiveLayer].FBStartAdress) + 3*(LCD_GetXSize()*Ypos + Xpos);
+    x_address = (hltdc.LayerCfg[ActiveLayer].FBStartAdress) + 3*(LCD_GetXSize()*Ypos + Xpos);
   }
-  else if((Ltdc_Handler.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_RGB565) || \
-          (Ltdc_Handler.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_ARGB4444) || \
-          (Ltdc_Handler.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_AL88))  
+  else if((hltdc.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_RGB565) || \
+          (hltdc.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_ARGB4444) || \
+          (hltdc.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_AL88))  
   {
-    x_address = (Ltdc_Handler.LayerCfg[ActiveLayer].FBStartAdress) + 2*(LCD_GetXSize()*Ypos + Xpos);   
+    x_address = (hltdc.LayerCfg[ActiveLayer].FBStartAdress) + 2*(LCD_GetXSize()*Ypos + Xpos);   
   }
   else
   {
-    x_address = (Ltdc_Handler.LayerCfg[ActiveLayer].FBStartAdress) + 2*(LCD_GetXSize()*Ypos + Xpos);
+    x_address = (hltdc.LayerCfg[ActiveLayer].FBStartAdress) + 2*(LCD_GetXSize()*Ypos + Xpos);
   }	
   /* 填充矩形 */
   LL_FillBuffer(ActiveLayer, (uint32_t *)x_address, Width, Height, (LCD_GetXSize() - Width), DrawProp[ActiveLayer].TextColor);
@@ -1276,7 +1221,7 @@ void LCD_FillEllipse(int Xpos, int Ypos, int XRadius, int YRadius)
 void LCD_DisplayOn(void)
 {
   /* 开显示 */
-  __HAL_LTDC_ENABLE(&Ltdc_Handler);
+  __HAL_LTDC_ENABLE(&hltdc);
   HAL_GPIO_WritePin(LTDC_DISP_GPIO_Port, LTDC_DISP_Pin, GPIO_PIN_SET);/* LCD_DISP使能*/
   HAL_GPIO_WritePin(LTDC_BL_GPIO_Port, LTDC_BL_Pin, GPIO_PIN_SET);  /* 开背光*/
 }
@@ -1288,7 +1233,7 @@ void LCD_DisplayOn(void)
 void LCD_DisplayOff(void)
 {
   /* 关显示 */
-  __HAL_LTDC_DISABLE(&Ltdc_Handler);
+  __HAL_LTDC_DISABLE(&hltdc);
   HAL_GPIO_WritePin(LTDC_DISP_GPIO_Port, LTDC_DISP_Pin, GPIO_PIN_RESET); /* LCD_DISP禁能*/
   HAL_GPIO_WritePin(LTDC_BL_GPIO_Port, LTDC_BL_Pin, GPIO_PIN_RESET);/*关背光*/
 }
@@ -1467,43 +1412,56 @@ static void FillTriangle(uint16_t x1, uint16_t x2, uint16_t x3, uint16_t y1, uin
 static void LL_FillBuffer(uint32_t LayerIndex, void *pDst, uint32_t xSize, uint32_t ySize, uint32_t OffLine, uint32_t ColorIndex) 
 {
 
-  Dma2d_Handler.Init.Mode         = DMA2D_R2M;
-  if(Ltdc_Handler.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_RGB565)
+  hdma2d.Init.Mode         = DMA2D_R2M;
+  if(hltdc.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_RGB565)
   { 
-    Dma2d_Handler.Init.ColorMode    = DMA2D_RGB565;
+    hdma2d.Init.ColorMode    = DMA2D_RGB565;
   }
-  else if(Ltdc_Handler.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_ARGB8888)
+  else if(hltdc.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_ARGB8888)
   { 
-    Dma2d_Handler.Init.ColorMode    = DMA2D_ARGB8888;
+    hdma2d.Init.ColorMode    = DMA2D_ARGB8888;
   }
-  else if(Ltdc_Handler.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_RGB888)
+  else if(hltdc.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_RGB888)
   { 
-    Dma2d_Handler.Init.ColorMode    = DMA2D_RGB888;
+    hdma2d.Init.ColorMode    = DMA2D_RGB888;
   }
-  else if(Ltdc_Handler.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_ARGB1555)
+  else if(hltdc.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_ARGB1555)
   { 
-    Dma2d_Handler.Init.ColorMode    = DMA2D_ARGB1555;
+    hdma2d.Init.ColorMode    = DMA2D_ARGB1555;
   }
-  else if(Ltdc_Handler.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_ARGB4444)
+  else if(hltdc.LayerCfg[ActiveLayer].PixelFormat == LTDC_PIXEL_FORMAT_ARGB4444)
   { 
-    Dma2d_Handler.Init.ColorMode    = DMA2D_ARGB4444;
+    hdma2d.Init.ColorMode    = DMA2D_ARGB4444;
   }
-  Dma2d_Handler.Init.OutputOffset = OffLine;      
+  hdma2d.Init.OutputOffset = OffLine;      
   
-  Dma2d_Handler.Instance = DMA2D;
+  hdma2d.Instance = DMA2D;
   
   /* DMA2D 初始化 */
-  if(HAL_DMA2D_Init(&Dma2d_Handler) == HAL_OK) 
+  if(HAL_DMA2D_Init(&hdma2d) == HAL_OK) 
   {
-    if(HAL_DMA2D_ConfigLayer(&Dma2d_Handler, LayerIndex) == HAL_OK) 
+    if(HAL_DMA2D_ConfigLayer(&hdma2d, LayerIndex) == HAL_OK) 
     {
-      if (HAL_DMA2D_Start(&Dma2d_Handler, ColorIndex, (uint32_t)pDst, xSize, ySize) == HAL_OK)
+      if (HAL_DMA2D_Start(&hdma2d, ColorIndex, (uint32_t)pDst, xSize, ySize) == HAL_OK)
       {
         /* DMA轮询传输 */  
-        HAL_DMA2D_PollForTransfer(&Dma2d_Handler, 100);
+        HAL_DMA2D_PollForTransfer(&hdma2d, 100);
       }
     }
   } 
+  
+//  if(HAL_DMA2D_Init(&hdma2d) == HAL_OK) 
+//  {
+//    if(HAL_DMA2D_ConfigLayer(&hdma2d, LayerIndex) == HAL_OK) 
+//    {
+//      if (HAL_DMA2D_Start_IT(&hdma2d, ColorIndex, (uint32_t)pDst, xSize, ySize) != HAL_OK)
+//      {
+////        /* DMA轮询传输 */  
+////        HAL_DMA2D_PollForTransfer(&hdma2d, 100);
+//      }
+//    }
+//  } 
+  
 }
 
 /**
@@ -1517,30 +1475,42 @@ static void LL_FillBuffer(uint32_t LayerIndex, void *pDst, uint32_t xSize, uint3
 static void LL_ConvertLineToARGB8888(void *pSrc, void *pDst, uint32_t xSize, uint32_t ColorMode)
 {    
   /* 配置DMA2D模式,颜色模式和输出偏移 */
-  Dma2d_Handler.Init.Mode         = DMA2D_M2M_PFC;
-  Dma2d_Handler.Init.ColorMode    = DMA2D_ARGB8888;
-  Dma2d_Handler.Init.OutputOffset = 0;     
+  hdma2d.Init.Mode         = DMA2D_M2M_PFC;
+  hdma2d.Init.ColorMode    = DMA2D_ARGB8888;
+  hdma2d.Init.OutputOffset = 0;     
   
   /* Foreground Configuration */
-  Dma2d_Handler.LayerCfg[1].AlphaMode = DMA2D_NO_MODIF_ALPHA;
-  Dma2d_Handler.LayerCfg[1].InputAlpha = 0xFF;
-  Dma2d_Handler.LayerCfg[1].InputColorMode = ColorMode;
-  Dma2d_Handler.LayerCfg[1].InputOffset = 0;
+  hdma2d.LayerCfg[1].AlphaMode = DMA2D_NO_MODIF_ALPHA;
+  hdma2d.LayerCfg[1].InputAlpha = 0xFF;
+  hdma2d.LayerCfg[1].InputColorMode = ColorMode;
+  hdma2d.LayerCfg[1].InputOffset = 0;
   
-  Dma2d_Handler.Instance = DMA2D; 
+  hdma2d.Instance = DMA2D; 
   
   /* DMA2D 初始化 */
-  if(HAL_DMA2D_Init(&Dma2d_Handler) == HAL_OK) 
+  if(HAL_DMA2D_Init(&hdma2d) == HAL_OK) 
   {
-    if(HAL_DMA2D_ConfigLayer(&Dma2d_Handler, 1) == HAL_OK) 
+    if(HAL_DMA2D_ConfigLayer(&hdma2d, 1) == HAL_OK) 
     {
-      if (HAL_DMA2D_Start(&Dma2d_Handler, (uint32_t)pSrc, (uint32_t)pDst, xSize, 1) == HAL_OK)
+      if (HAL_DMA2D_Start(&hdma2d, (uint32_t)pSrc, (uint32_t)pDst, xSize, 1) == HAL_OK)
       {
         /* DMA轮询传输*/  
-        HAL_DMA2D_PollForTransfer(&Dma2d_Handler, 10);
+        HAL_DMA2D_PollForTransfer(&hdma2d, 10);
       }
     }
-  } 
+  }
+
+//  if(HAL_DMA2D_Init(&hdma2d) == HAL_OK) 
+//  {
+//    if(HAL_DMA2D_ConfigLayer(&hdma2d, 1) == HAL_OK) 
+//    {
+//      if (HAL_DMA2D_Start_IT(&hdma2d, (uint32_t)pSrc, (uint32_t)pDst, xSize, 1) != HAL_OK)
+//      {
+////        /* DMA轮询传输*/  
+////        HAL_DMA2D_PollForTransfer(&hdma2d, 10);
+//      }
+//    }
+//  }
 }
   
 

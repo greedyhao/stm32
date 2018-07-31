@@ -40,6 +40,7 @@ typedef struct
   void     (*Clear)(uint32_t Color);
   void     (*SelectLayer)(uint32_t LayerIndex);
   void     (*SetTransparency) (uint32_t LayerIndex, uint8_t Transparency);
+  void     (*LayerInit) (uint16_t LayerIndex, uint32_t FB_Address,uint32_t PixelFormat);
 }LCD_DrvTypeDef;    
 /**
   * @}

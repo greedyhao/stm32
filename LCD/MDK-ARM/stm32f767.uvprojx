@@ -336,7 +336,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER,STM32F767xx</Define>
               <Undefine></Undefine>
-              <IncludePath>../Inc;       ../Drivers/STM32F7xx_HAL_Driver/Inc;       ../Drivers/STM32F7xx_HAL_Driver/Inc/Legacy;       ../Drivers/CMSIS/Device/ST/STM32F7xx/Include;       ../Drivers/CMSIS/Include;       ..\Log;       ..\Drivers\BSP\Components\w9825g6kh</IncludePath>
+              <IncludePath>../Inc;              ../Drivers/STM32F7xx_HAL_Driver/Inc;              ../Drivers/STM32F7xx_HAL_Driver/Inc/Legacy;              ../Drivers/CMSIS/Device/ST/STM32F7xx/Include;              ../Drivers/CMSIS/Include;              ..\Log;              ..\Drivers\BSP\Components\w9825g6kh</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
